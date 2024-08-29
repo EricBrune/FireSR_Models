@@ -1,0 +1,95 @@
+{
+    "name": "S2_MODIS",
+    "phase": "train",
+    "gpu_ids": [
+        0, 1, 2
+    ],
+    "path": {
+        "log": "logs",
+        "tb_logger": "tb_logger",
+        "results": "results",
+        "checkpoint": "checkpoint",
+        //"resume_state": "experiments/S2_MODIS_240601_173427/checkpoint/I35000_E21"
+        "resume_state": null
+    },
+    "datasets": {
+        "train": {
+            "name": "TrainData",
+            "mode": "HR",
+            "dataroot": "/path/to/your/train/dir",
+            "datatype": "img", //lmdb or img, path of img files
+            "l_resolution": 16,
+            "r_resolution": 128,
+            "batch_size": 8,
+            "num_workers": 8,
+            "use_shuffle": true,
+            "data_len": 58606
+        },
+        "val": {
+            "name": "ValData",
+            "mode": "LRHR", 
+            "dataroot": "/path/to/your/val/dir",
+            "datatype": "img", //lmdb or img, path of img files
+            "l_resolution": 16,
+            "r_resolution": 128,
+            "data_len": 36
+        }
+    },
+    "model": {
+        "which_model_G": "sr3", //ddpm, sr3
+        "finetune_norm": false,
+        "unet": {
+            "in_channel": 26,
+            "out_channel": 4,
+            "inner_channel": 64,
+            "channel_multiplier": [
+                1,
+                2,
+                4,
+                8
+            ],
+            "attn_res": [
+                16
+            ],
+            "res_blocks": 2,
+            "dropout": 0.2
+        },
+        "beta_schedule": {
+            "train": {
+                "schedule": "linear",
+                "n_timestep": 2000,
+                "linear_start": 1e-6,
+                "linear_end": 1e-2
+            },
+            "val": {
+                "schedule": "linear",
+                "n_timestep": 2000,
+                "linear_start": 1e-6,
+                "linear_end": 1e-2
+            }
+        },
+        "diffusion": {
+            "image_size": 128,
+            "channels": 3, //sample channel
+            "conditional": true
+        }
+    },
+    "train": {  
+        "n_iter": 300000,
+        "val_freq": 5e3,
+        "save_checkpoint_freq": 5e3,
+        "print_freq": 2e2,
+        "optimizer": {
+            "type": "adam",
+            "lr": 3e-6
+        },
+        "ema_scheduler": {
+            "step_start_ema": 1,
+            "update_ema_every": 1,
+            "ema_decay": 0.999
+        }
+    },
+    "wandb": {
+        "project": "FiRes-DDPM"
+    }
+}

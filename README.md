@@ -1,211 +1,157 @@
 
-# FireSR Dataset
+# FireSR_models
 
 ## Overview
 
-**FireSR** is a dataset designed for the super-resolution and segmentation of wildfire-burned areas. It includes data for all wildfire events in Canada from 2017 to 2023 that exceed 2000 hectares in size, as reported by the National Burned Area Composite (NBAC). The dataset aims to support high-resolution daily monitoring and improve wildfire management using machine learning techniques.
+**FireSR_models** is a repository containing models for super-resolution and segmentation of wildfire-burned areas, utilizing high-resolution and low-resolution satellite imagery. This repository includes three main directories:
 
-## Dataset Structure
+- **FiRes-DDPM**: A multitask adaptation of the Image-Super-Resolution-via-Iterative-Refinement (SR3) model, generating both super-resolved images and segmentation masks.
+- **Image-Super-Resolution-via-Iterative-Refinement**: An implementation of the SR3 model for single-image super-resolution. [Original repo](https://github.com/Janspiry/Image-Super-Resolution-via-Iterative-Refinement/)
+- **Pytorch-UNet**: A U-Net implementation for semantic segmentation tasks. [Original repo](https://github.com/milesial/Pytorch-UNet)
 
-The dataset is organized into several directories, each containing data relevant to different aspects of wildfire monitoring:
+## Getting Started
 
-- **S2**: Contains Sentinel-2 images.
-  - **pre**: Pre-fire Sentinel-2 images (high resolution).
-  - **post**: Post-fire Sentinel-2 images (high resolution).
+### Step 1: Prepare Your Environment
 
-- **mask**: Contains NBAC polygons, which serve as ground truth masks for the burned areas.
-  - **pre**: Burned area labels from the year before the fire, using the same spatial bounds as the fire events of the current year.
-  - **post**: Burned area labels corresponding to post-fire conditions.
-
-- **MODIS**: Contains post-fire MODIS images (lower resolution).
-
-- **LULC**: Contains land use/land cover data from ESRI Sentinel-2 10-Meter Land Use/Land Cover (2017-2023).
-
-- **Daymet**: Contains weather data from Daymet V4: Daily Surface Weather and Climatological Summaries.
-
-### File Naming Convention
-
-Each GeoTIFF (.tif) file is named according to the format: `CA_<year>_<province>_<id>.tif`, where:
-- `CA` stands for Canada.
-- `<year>` is the year of the wildfire event.
-- `<province>` is the province code (e.g., AB for Alberta, BC for British Columbia).
-- `<id>` is a unique identifier for the wildfire event.
-
-### Directory Structure
-
-The dataset is organized as follows:
-
-```
-FireSR/
-│
-├── dataset/
-│   ├── S2/
-│   │   ├── post/
-│   │   │   ├── CA_2017_AB_204.tif
-│   │   │   ├── CA_2017_AB_2418.tif
-│   │   │   └── ...
-│   │   ├── pre/
-│   │   │   ├── CA_2017_AB_204.tif
-│   │   │   ├── CA_2017_AB_2418.tif
-│   │   │   └── ...
-│   ├── mask/
-│   │   ├── post/
-│   │   │   ├── CA_2017_AB_204.tif
-│   │   │   ├── CA_2017_AB_2418.tif
-│   │   │   └── ...
-│   │   ├── pre/
-│   │   │   ├── CA_2017_AB_204.tif
-│   │   │   ├── CA_2017_AB_2418.tif
-│   │   │   └── ...
-│   ├── MODIS/
-│   │   ├── CA_2017_AB_204.tif
-│   │   ├── CA_2017_AB_2418.tif
-│   │   └── ...
-│   ├── LULC/
-│   │   ├── CA_2017_AB_204.tif
-│   │   ├── CA_2017_AB_2418.tif
-│   │   └── ...
-│   ├── Daymet/
-│   │   ├── CA_2017_AB_204.tif
-│   │   ├── CA_2017_AB_2418.tif
-│   │   └── ...
-```
-
-### Spatial Resolution and Channels
-
-- **Sentinel-2 (S2) Images**: 20 meters (Bands: B12, B8, B4)
-- **MODIS Images**: 250 meters (Bands: B7, B2, B1)
-- **NBAC Burned Area Labels**: 20 meters (1 channel, binary classification: burned/unburned)
-- **Daymet Weather Data**: 1000 meters (7 channels: dayl, prcp, srad, swe, tmax, tmin, vp)
-- **ESRI Land Use/Land Cover Data**: 10 meters (1 channel with 9 classes: water, trees, flooded vegetation, crops, built area, bare ground, snow/ice, clouds, rangeland)
-
-**Daymet Weather Data**: The Daymet dataset includes seven channels that provide various weather-related parameters, which are crucial for understanding and modeling wildfire conditions:
-
-| Name | Units | Min | Max | Description |
-
-|------|-------|-----|-----|-------------|
-
-| dayl | seconds | 0 | 86400 | Duration of the daylight period, based on the period of the day during which the sun is above a hypothetical flat horizon. |
-
-| prcp | mm | 0 | 544 | Daily total precipitation, sum of all forms converted to water-equivalent. |
-
-| srad | W/m^2 | 0 | 1051 | Incident shortwave radiation flux density, averaged over the daylight period of the day. |
-
-| swe | kg/m^2 | 0 | 13931 | Snow water equivalent, representing the amount of water contained within the snowpack. |
-
-| tmax | °C | -60 | 60 | Daily maximum 2-meter air temperature. |
-
-| tmin | °C | -60 | 42 | Daily minimum 2-meter air temperature. |
-
-| vp | Pa | 0 | 8230 | Daily average partial pressure of water vapor. |
-
-**ESRI Land Use/Land Cover Data**: The ESRI 10m Annual Land Cover dataset provides a time series of global maps of land use and land cover (LULC) from 2017 to 2023 at a 10-meter resolution. These maps are derived from ESA Sentinel-2 imagery and are generated by Impact Observatory using a deep learning model trained on billions of human-labeled pixels. Each map is a composite of LULC predictions for 9 classes throughout the year, offering a representative snapshot of each year.
-
-| Class Value | Land Cover Class |
-
-|-------------|------------------|
-
-| 1 | Water |
-
-| 2 | Trees |
-
-| 4 | Flooded Vegetation |
-
-| 5 | Crops |
-
-| 7 | Built Area |
-
-| 8 | Bare Ground |
-
-| 9 | Snow/Ice |
-
-| 10 | Clouds |
-
-| 11 | Rangeland |
-
-
-## Usage Tutorial
-
-To help users get started with FireSR, we provide a comprehensive tutorial with scripts for data extraction and processing. Below is an example workflow:
-
-### Step 1: Extract FireSR.tar.gz
+Before using the models, ensure you have the necessary dependencies installed. You can do this by running the following commands in each model directory:
 
 ```bash
-tar -xvf FireSR.tar.gz
+pip install -r requirements.txt
 ```
 
 ### Step 2: Tiling the GeoTIFF Files
 
-The dataset contains high-resolution GeoTIFF files. For machine learning models, it may be useful to tile these images into smaller patches. Here's a Python script to tile the images:
+To train or test the models, you need to prepare your dataset by tiling the GeoTIFF files into smaller patches. This step is crucial for handling high-resolution imagery efficiently. Follow the steps below to tile your images:
 
-```python
-import rasterio
-from rasterio.windows import Window
-import os
 
-def tile_image(image_path, output_dir, tile_size=128):
-    with rasterio.open(image_path) as src:
-        for i in range(0, src.height, tile_size):
-            for j in range(0, src.width, tile_size):
-                window = Window(j, i, tile_size, tile_size)
-                transform = src.window_transform(window)
-                outpath = os.path.join(output_dir, f"{os.path.basename(image_path).split('.')[0]}_{i}_{j}.tif")
-                with rasterio.open(outpath, 'w', driver='GTiff', height=tile_size, width=tile_size, count=src.count, dtype=src.dtypes[0], crs=src.crs, transform=transform) as dst:
-                    dst.write(src.read(window=window))
+1. **Run the Tiling Script**
 
-# Example usage
-tile_image('FireSR/dataset/S2/post/CA_2017_AB_204.tif', 'tiled_images/')
-```
+   Use the Python script below to tile the GeoTIFF images. This script divides each image into smaller patches of a specified size (e.g., 128x128 pixels).
 
-### Step 3: Loading Data into a Machine Learning Model
+   ```python
+   import rasterio
+   from rasterio.windows import Window
+   import os
 
-After tiling, the images can be loaded into a machine learning model using libraries like PyTorch or TensorFlow. Here's an example using PyTorch:
+   def tile_image(image_path, output_dir, tile_size=128):
+       with rasterio.open(image_path) as src:
+           for i in range(0, src.height, tile_size):
+               for j in range(0, src.width, tile_size):
+                   window = Window(j, i, tile_size, tile_size)
+                   transform = src.window_transform(window)
+                   outpath = os.path.join(output_dir, f"{os.path.basename(image_path).split('.')[0]}_{i}_{j}.tif")
+                   with rasterio.open(outpath, 'w', driver='GTiff', height=tile_size, width=tile_size, count=src.count, dtype=src.dtypes[0], crs=src.crs, transform=transform) as dst:
+                       dst.write(src.read(window=window))
 
-```python
-import torch
-from torch.utils.data import Dataset
-from torchvision import transforms
-import rasterio
+   # Example usage
+   image_dir = 'FireSR/dataset/S2/post/'
+   output_dir = 'FireSR_tiled/hr_128/'
+   os.makedirs(output_dir, exist_ok=True)
 
-class FireSRDataset(Dataset):
-    def __init__(self, image_dir, transform=None):
-        self.image_dir = image_dir
-        self.transform = transform
-        self.image_paths = [os.path.join(image_dir, f) for f in os.listdir(image_dir) if f.endswith('.tif')]
+   for image_file in os.listdir(image_dir):
+       if image_file.endswith('.tif'):
+           tile_image(os.path.join(image_dir, image_file), output_dir)
+   ```
 
-    def __len__(self):
-        return len(self.image_paths)
+   Make sure to adjust the `image_dir` and `output_dir` to point to your specific directories.
 
-    def __getitem__(self, idx):
-        image_path = self.image_paths[idx]
-        with rasterio.open(image_path) as src:
-            image = src.read()
-        if self.transform:
-            image = self.transform(image)
-        return image
+2. **Dataset structure**
 
-# Example usage
-dataset = FireSRDataset('tiled_images/', transform=transforms.ToTensor())
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=True)
-```
+   Your dataset should be structured in the following format:
+
+   ```
+   FireSR_train/
+   │
+   ├── Daymet_128/
+   ├── LULC_128/
+   ├── hr_128/
+   ├── hr_mask_128/  # Only for FiRes-DDPM
+   ├── lr_16/
+   ├── pre_fire_128/
+   ├── sr_16_128/
+   ```
+
+### Step 3: Training the Models
+
+#### FiRes-DDPM
+
+1. Navigate to the `FiRes-DDPM` directory.
+
+2. Follow the instructions in the model's README to set up the configuration files and initiate training:
+
+   ```bash
+   python sr.py -p train -c config/train_S2_MODIS.json
+   ```
+
+#### Image-Super-Resolution-via-Iterative-Refinement
+
+1. Navigate to the `Image-Super-Resolution-via-Iterative-Refinement` directory.
+
+2. Edit the dataset configuration in the JSON files to match your data paths and resolutions.
+
+3. Start training:
+
+   ```bash
+   python sr.py -p train -c config/train_S2_MODIS.json
+   ```
+
+#### Pytorch-UNet
+
+1. Navigate to the `Pytorch-UNet` directory.
+
+2. To train the model, run:
+
+   ```bash
+   python train.py --epochs 5 --batch-size 16 --learning-rate 0.001 --amp
+   ```
+
+### Step 4: Testing the models
+
+#### FiRes-DDPM
+
+1. Navigate to the `FiRes-DDPM` directory.
+
+2. Follow the instructions in the model's README to set up the configuration files and initiate training:
+
+   ```bash
+   python sr.py -p val -c config/test_S2_MODIS.json
+   ```
+
+#### Image-Super-Resolution-via-Iterative-Refinement
+
+1. Navigate to the `Image-Super-Resolution-via-Iterative-Refinement` directory.
+
+2. Edit the dataset configuration in the JSON files to match your data paths and resolutions.
+
+3. Start training:
+
+   ```bash
+   python sr.py -p val -c config/test_S2_MODIS.json
+   ```
+
+#### Pytorch-UNet
+
+1. Navigate to the `Pytorch-UNet` directory.
+
+2. To train the model, run:
+
+   ```bash
+   python predict.py -i1 /path/to/post/imgs -i2 /path/to/pre/imgs -o /path/to/output/dir
+   ```
+
+## Model Weights
+
+Pre-trained model weights can be downloaded from the following link:
+
+[Download Model Weights](https://drive.google.com/drive/folders/1qARZM6klJvf8IftqxfEX7a09zCV2Dk1d?usp=sharing)
+
 
 ## License
 
-This dataset is licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0). You are free to share and adapt the material as long as appropriate credit is given.
+This repository is licensed under the MIT License.
 
 ## Contact
 
 For any questions or further information, please contact:
 - Name: Eric Brune
 - Email: ebrune@kth.se
-
-
-## Replication of results
-
-The two repositories used for the baseline models were:
-- Segmentation U-Net
-https://github.com/milesial/Pytorch-UNet
-- SR3
-https://github.com/Janspiry/Image-Super-Resolution-via-Iterative-Refinement/
-
-The adaptation made for FiRes-DDPM as well as the weights of all four models (MODIS Bicubic segmentation U-Net, SR segmentation U-Net, SR3 and FiRes-DDPM) will be released in this repo in the coming week.
