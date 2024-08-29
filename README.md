@@ -1,9 +1,9 @@
 
-# FireSR_models
+# FireSR_Models
 
 ## Overview
 
-**FireSR_models** is a repository containing models for super-resolution and segmentation of wildfire-burned areas, utilizing high-resolution and low-resolution satellite imagery. This repository includes three main directories:
+**FireSR_Models** is a repository containing repositories for super-resolution and segmentation of wildfire-burned areas, utilizing high-resolution and low-resolution satellite imagery. This repository includes three main directories:
 
 - **FiRes-DDPM**: A multitask adaptation of the Image-Super-Resolution-via-Iterative-Refinement (SR3) model, generating both super-resolved images and segmentation masks.
 - **Image-Super-Resolution-via-Iterative-Refinement**: An implementation of the SR3 model for single-image super-resolution. [Original repo](https://github.com/Janspiry/Image-Super-Resolution-via-Iterative-Refinement/)
